@@ -236,19 +236,50 @@ Plex.prototype.processEvent = function(self, event, sensor) {
         }
     }
 
-    self.debugLog("Event triggered sensor off: "+sensor.name);
-    sensor.service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(false);
-
-
-    self.debugLog("Event triggered sensor on: "+sensor.name);
-    sensor.activePlayers.add(event.Player.uuid);
-    sensor.service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(true);
-
-    self.debugLog("Event scheduled sensor off: "+sensor.name+" after  1000ms");
-    this.timeouts[sensor.name] = setTimeout(function() {
-        self.debugLog("Event triggered sensor off: "+sensor.name);
-        sensor.service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(false);
-    }.bind(this), 1000);
+    if (event.event == "media.play" || (event.event == "media.resume" && !sensor.ignorePauseResume))
+    {
+        if (typeof this.timeouts[sensor.name] != 'undefined')
+        {
+            self.debugLog("Clear existing delayed off for: "+sensor.name);
+            clearTimeout(this.timeouts[sensor.name])
+        }
+        if (sensor.activePlayers.size == 0)
+        {
+            self.debugLog("Event triggered sensor on: "+sensor.name);
+        }
+        sensor.activePlayers.add(event.Player.uuid);
+        sensor.service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(true);
+    }
+    else if (event.event == "media.stop" || (event.event == "media.pause" && !sensor.ignorePauseResume))
+    {
+        sensor.activePlayers.delete(event.Player.uuid);
+        if (sensor.activePlayers.size == 0)
+        {
+            if (typeof this.timeouts[sensor.name] != 'undefined')
+            {
+                self.debugLog("Clear existing delayed off for: "+sensor.name);
+                clearTimeout(this.timeouts[sensor.name])
+            }
+            if (sensor.delayOff &&
+              sensor.delayOff > 0)
+            {
+                self.debugLog("Event scheduled sensor off: "+sensor.name+" after "+sensor.delayOff+"ms");
+                this.timeouts[sensor.name] = setTimeout(function() {
+                    self.debugLog("Event triggered sensor off: "+sensor.name);
+                    sensor.service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(false);
+                }.bind(this), sensor.delayOff);
+            }
+            else
+            {
+                self.debugLog("Event triggered sensor off without delay: "+sensor.name);
+                sensor.service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(false);
+            }
+        }
+    }
+    else
+    {
+        self.debugLog("Pause / Resume event ignored for sensor: "+sensor.name);
+    }
 
 
 }
