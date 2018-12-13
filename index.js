@@ -240,6 +240,13 @@ Plex.prototype.processEvent = function(self, event, sensor) {
     sensor.activePlayers.add(event.Player.uuid);
     sensor.service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(true);
 
+    self.debugLog("Event scheduled sensor off: "+sensor.name+" after  10ms");
+    this.timeouts[sensor.name] = setTimeout(function() {
+        self.debugLog("Event triggered sensor off: "+sensor.name);
+        sensor.service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(false);
+    }.bind(this), 10);
+
+
 }
 
 Plex.prototype.getPlaying = function (callback) {
