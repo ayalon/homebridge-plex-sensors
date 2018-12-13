@@ -1,0 +1,55 @@
+{
+    "bridge": {
+        "name": "Homebridge_ayalon",
+        "username": "CC:22:3D:E3:CE:30",
+        "port": 51826,
+        "pin": "123-45-999"
+    },
+    "description": "Homebridge",
+    "platforms": [
+        {
+            "platform": "homebridge-plex-sensors.Plex",
+            "logSeenPlayersAndUsers": true,
+            "debug": true,
+            "sensors": [
+                {
+                    "name": "Movie Playing",
+                    "customFilters": {
+                        "event": "media.play"
+                    },
+                    "users": [
+                        "brainski"
+                    ]
+                },
+                {
+                    "name": "Movie pause",
+                    "customFilters": {
+                        "event": "media.pause"
+                    },
+                    "users": [
+                        "brainski"
+                    ]
+                },
+                {
+                    "name": "Movie resume",
+                    "customFilters": {
+                        "event": "media.resume"
+                    },
+                    "users": [
+                        "brainski"
+                    ]
+                },
+                {
+                    "name": "Movie stops",
+                    "customFilters": {
+                        "event": "media.stop"
+                    },
+                    "users": [
+                        "brainski"
+                    ]
+                }
+            ]
+        }
+    ],
+    "accessories": []
+}
